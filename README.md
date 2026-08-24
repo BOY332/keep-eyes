@@ -99,7 +99,11 @@ ls -lh "build/electron/$ElectronFile"
 
 下载完成后，在项目根目录执行 `npm run dist:win`。如果构建日志出现 `using custom electronDist zip file`，说明已使用本地压缩包。
 
-> 注意：相对路径 `./build/electron/...` 是相对于执行命令时的项目根目录解析的。不要混用 `/mnt/e/code/keep-eyes` 和 `/mnt/e/code/tempcode/keep-eyes` 这两个不同目录。
+> 注意：相对路径 `./build/electron/...` 是相对于执行命令时的项目根目录解析的。请先进入克隆后的项目目录，再执行安装和构建命令：
+>
+> ```powershell
+> cd keep-eyes
+> ```
 
 > 如果以后升级 Electron 版本，需要同步修改 `electronDist` 中的文件名，并下载对应版本的压缩包。
 
@@ -191,3 +195,4 @@ release/
 ## 许可证
 
 本项目使用 MIT License。
+
