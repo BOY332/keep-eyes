@@ -43,6 +43,66 @@ node_modules/electron/dist/
 
 如果本地已有完整的 `node_modules`，通常不需要重复安装依赖。
 
+## 准备本地 Electron 压缩包
+
+为了避免 `electron-builder` 在打包时从网络下载 Electron，本项目使用 `package.json` 中配置的本地压缩包：
+
+```json
+"electronDist": "./build/electron/electron-v43.4.1-win32-x64.zip"
+```
+
+打包前必须存在：
+
+```text
+build/electron/electron-v43.4.1-win32-x64.zip
+```
+
+文件名必须与当前配置匹配： Electron `43.4.1`、Windows (`win32`)、`x64`。
+
+### Windows PowerShell 下载
+
+请在项目根目录执行：
+
+```powershell
+$ElectronVersion = "43.4.1"
+$ElectronFile = "electron-v$ElectronVersion-win32-x64.zip"
+$ElectronDirectory = Join-Path (Get-Location) "build\electron"
+$ElectronUrl = "https://github.com/electron/electron/releases/download/v$ElectronVersion/$ElectronFile"
+
+New-Item -ItemType Directory -Force $ElectronDirectory | Out-Null
+Invoke-WebRequest `
+  -Uri $ElectronUrl `
+  -OutFile (Join-Path $ElectronDirectory $ElectronFile)
+```
+
+如果 GitHub 下载较慢，可将 `$ElectronUrl` 改为：
+
+```powershell
+$ElectronUrl = "https://npmmirror.com/mirrors/electron/v$ElectronVersion/$ElectronFile"
+Invoke-WebRequest `
+  -Uri $ElectronUrl `
+  -OutFile (Join-Path $ElectronDirectory $ElectronFile)
+```
+
+### Linux Shell 下载
+
+如果在 WSL 中执行命令，请先进入项目根目录：
+
+```bash
+cd keep-eyes
+ElectronVersion="43.4.1"
+ElectronFile="electron-v${ElectronVersion}-win32-x64.zip"
+mkdir -p build/electron
+curl -fL --retry 3 -o "build/electron/$ElectronFile" "https://github.com/electron/electron/releases/download/v${ElectronVersion}/$ElectronFile"
+ls -lh "build/electron/$ElectronFile"
+```
+
+下载完成后，在项目根目录执行 `npm run dist:win`。如果构建日志出现 `using custom electronDist zip file`，说明已使用本地压缩包。
+
+> 注意：相对路径 `./build/electron/...` 是相对于执行命令时的项目根目录解析的。不要混用 `/mnt/e/code/keep-eyes` 和 `/mnt/e/code/tempcode/keep-eyes` 这两个不同目录。
+
+> 如果以后升级 Electron 版本，需要同步修改 `electronDist` 中的文件名，并下载对应版本的压缩包。
+
 ## 本地开发运行
 
 ```powershell
