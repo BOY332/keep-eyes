@@ -84,28 +84,6 @@ Invoke-WebRequest `
   -OutFile (Join-Path $ElectronDirectory $ElectronFile)
 ```
 
-### Linux Shell 下载
-
-如果在 WSL 中执行命令，请先进入项目根目录：
-
-```bash
-cd keep-eyes
-ElectronVersion="43.4.1"
-ElectronFile="electron-v${ElectronVersion}-win32-x64.zip"
-mkdir -p build/electron
-curl -fL --retry 3 -o "build/electron/$ElectronFile" "https://github.com/electron/electron/releases/download/v${ElectronVersion}/$ElectronFile"
-ls -lh "build/electron/$ElectronFile"
-```
-
-下载完成后，在项目根目录执行 `npm run dist:win`。如果构建日志出现 `using custom electronDist zip file`，说明已使用本地压缩包。
-
-> 注意：相对路径 `./build/electron/...` 是相对于执行命令时的项目根目录解析的。请先进入克隆后的项目目录，再执行安装和构建命令：
->
-> ```powershell
-> cd keep-eyes
-> ```
-
-> 如果以后升级 Electron 版本，需要同步修改 `electronDist` 中的文件名，并下载对应版本的压缩包。
 
 ## 本地开发运行
 
