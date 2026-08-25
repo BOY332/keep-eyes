@@ -8,6 +8,8 @@ const api: KeepEyesApi = {
   updateSettings: (settings: Partial<ReminderSettings>) => ipcRenderer.invoke("reminder:update-settings", settings) as Promise<AppState>,
   dispatch: (event: ReminderEvent) => ipcRenderer.invoke("reminder:dispatch", event) as Promise<AppState>,
   closeEarlyReminder: () => ipcRenderer.invoke("reminder:close-early") as Promise<void>,
+  skipRest: () => ipcRenderer.invoke("reminder:skip-rest") as Promise<AppState>,
+  setReminderMousePassthrough: (enabled: boolean) => ipcRenderer.send("reminder:set-mouse-passthrough", enabled),
   onStateChanged: (listener) => {
     const wrapped = (_event: Electron.IpcRendererEvent, state: AppState) => listener(state);
     ipcRenderer.on("reminder:state-changed", wrapped);

@@ -22,6 +22,7 @@ export type ReminderEvent =
   | { type: "TICK"; now: number }
   | { type: "BEGIN_REST"; now: number }
   | { type: "SNOOZE"; now: number }
+  | { type: "SKIP_REST"; now: number }
   | { type: "PAUSE"; now: number; durationMs: number }
   | { type: "RESUME"; now: number }
   | { type: "END_REST"; now: number };
@@ -65,6 +66,9 @@ export function transition(snapshot: ReminderSnapshot, event: ReminderEvent): Re
     case "SNOOZE":
       if (snapshot.phase !== "awaiting-action") return snapshot;
       next = { ...snapshot, phase: "snoozed", dueAt: event.now + snapshot.settings.snoozeMinutes * 60_000, pauseEndsAt: null, restEndsAt: null }; break;
+    case "SKIP_REST":
+      if (snapshot.phase !== "awaiting-action") return snapshot;
+      next = createInitialSnapshot(snapshot.settings, event.now); break;
     case "PAUSE":
       if (event.durationMs <= 0) throw new Error("???????????????");
       next = { ...snapshot, phase: "paused", dueAt: null, pauseEndsAt: event.now + event.durationMs, restEndsAt: null }; break;

@@ -2,7 +2,7 @@ import type { ReminderScheduler } from "./reminder-scheduler";
 import type { AppState } from "../shared/reminder-machine";
 import type { WindowsActions } from "./windows-actions";
 
-export interface FocusWindow { show(): Promise<void>; hide(): void; }
+export interface FocusWindow { show(state: AppState): Promise<void>; hide(): void; }
 /** �������͵��������ݾɵ� Electron �������������̶����̲���ʹ��֪ͨ����г�����⡣ */
 export interface AlertNotifier { showNotification(onClick: () => void): Promise<void>; }
 export interface SensitiveContextDetector { isSensitiveContext(): Promise<boolean>; }
@@ -14,7 +14,7 @@ export class AlertController {
   async stateChanged(state: AppState): Promise<void> {
     if (state.phase === "awaiting-action") {
       this.displayRequestedForCurrentRest = false;
-      if (!this.earlyReminderDismissed) await this.focusWindow.show();
+      if (!this.earlyReminderDismissed) await this.focusWindow.show(state);
       return;
     }
     this.earlyReminderDismissed = false;
@@ -31,7 +31,8 @@ export class AlertController {
     }
   }
   async returnFromSystemAction(): Promise<void> {
-    if (this.scheduler.getState().phase === "awaiting-action" && !this.earlyReminderDismissed) await this.focusWindow.show();
+    const state = this.scheduler.getState();
+    if (state.phase === "awaiting-action" && !this.earlyReminderDismissed) await this.focusWindow.show(state);
   }
   cancelLockUpgrade(): void { /* �̶��������̲��������������� */ }
 }

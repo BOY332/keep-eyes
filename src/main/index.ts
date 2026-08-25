@@ -9,6 +9,7 @@ import { FocusReminderWindowController } from "./focus-reminder-window";
 import { TrayController } from "./tray-controller";
 import { WindowsActionsAdapter } from "./windows-actions";
 import { AlertController } from "./alert-controller";
+import { sendStateToMainWindow } from "./main-window-state";
 
 let mainWindow: BrowserWindow | null = null;
 let scheduler: ReminderScheduler;
@@ -16,7 +17,25 @@ let tray: TrayController;
 let alerts: AlertController;
 const developmentUrl = process.env.VITE_DEV_SERVER_URL;
 const rendererUrl = () => developmentUrl ?? pathToFileURL(path.join(__dirname, "../../dist/index.html")).toString();
-async function createWindow(): Promise<void> { mainWindow = new BrowserWindow({ width: 960, height: 680, minWidth: 720, minHeight: 500, webPreferences: { preload: path.join(__dirname, "../preload/index.js"), contextIsolation: true, nodeIntegration: false, sandbox: true } }); await mainWindow.loadURL(rendererUrl()); }
+async function createWindow(): Promise<void> {
+  const window = new BrowserWindow({
+    width: 960,
+    height: 680,
+    minWidth: 720,
+    minHeight: 500,
+    webPreferences: {
+      preload: path.join(__dirname, "../preload/index.js"),
+      contextIsolation: true,
+      nodeIntegration: false,
+      sandbox: true
+    }
+  });
+  mainWindow = window;
+  window.on("closed", () => {
+    if (mainWindow === window) mainWindow = null;
+  });
+  await window.loadURL(rendererUrl());
+}
 function showMainWindow(): void { if (!mainWindow || mainWindow.isDestroyed()) void createWindow(); else { mainWindow.show(); mainWindow.focus(); } }
 app.whenReady().then(async () => {
   const store = new JsonFileReminderStore(path.join(app.getPath("userData"), "reminder-state.json"));
@@ -25,9 +44,21 @@ app.whenReady().then(async () => {
   alerts = new AlertController(scheduler, focus, new WindowsActionsAdapter());
   tray = new TrayController({ open: showMainWindow, startRest: () => void scheduler.dispatch({ type: "BEGIN_REST", now: Date.now() }), pause: () => void scheduler.dispatch({ type: "PAUSE", now: Date.now(), durationMs: 30 * 60_000 }), quit: () => app.quit() });
   tray.create();
-  scheduler.subscribe((state) => { mainWindow?.webContents.send("reminder:state-changed", state); tray.refresh(state); void alerts.stateChanged(state); });
+  scheduler.subscribe((state) => {
+    sendStateToMainWindow(mainWindow, state);
+    try {
+      tray.refresh(state);
+    } catch (error) {
+      console.error("Failed to refresh the tray state.", error);
+    }
+    void alerts.stateChanged(state).catch((error: unknown) => {
+      console.error("Failed to update the reminder window.", error);
+    });
+  });
+  ipcMain.on("reminder:set-mouse-passthrough", (_event, enabled: unknown) => focus.setMousePassthrough(enabled === true));
   ipcMain.handle("reminder:get-state", () => scheduler.getState());
   ipcMain.handle("reminder:close-early", () => { alerts?.hideEarlyReminder(); });
+  ipcMain.handle("reminder:skip-rest", () => scheduler.dispatch({ type: "SKIP_REST", now: Date.now() }));
   ipcMain.handle("reminder:update-settings", (_event, settings: Partial<ReminderSettings>) => scheduler.updateSettings(settings));
   ipcMain.handle("reminder:dispatch", (_event, reminderEvent: ReminderEvent) => scheduler.dispatch(reminderEvent));
   powerMonitor.on("resume", () => void alerts.returnFromSystemAction());
