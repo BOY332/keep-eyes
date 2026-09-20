@@ -22,6 +22,19 @@ keep-eyes 在后台记录用眼时间，在达到设定时间后通过桌面提�
 
 > 注意：当前版本尚未接入会议软件、全屏演示或投屏状态自动检测。开会或演示前，建议从弹窗或系统托盘选择“暂停提醒”。
 
+## 云端打包安装程序
+
+推荐在 GitHub 上打包，不必在本地准备 Electron 压缩包。
+
+1. 打开仓库的 [Actions](https://github.com/BOY332/keep-eyes/actions) 页面
+2. 选择 **Build Windows installer**
+3. 代码推到 main 后会自动开始打包；也可以点 **Run workflow** 手动再打一次
+4. 等待完成后，打开这次运行记录，在 Artifacts 里下载 `keep-eyes-windows-installer`
+
+如果推送了 `v0.1.1` 这样的版本标签，安装包还会自动出现在 [Releases](https://github.com/BOY332/keep-eyes/releases)。
+
+Windows 可能提示应用未签名，选择“仍要运行”即可。
+
 ## 环境要求
 
 - Windows 10 x64 或 Windows 11 x64
@@ -44,47 +57,17 @@ node_modules/electron/dist/
 
 如果本地已有完整的 `node_modules`，通常不需要重复安装依赖。
 
-## 准备本地 Electron 压缩包
+## 可选：本地 Electron 压缩包
 
-为了避免 `electron-builder` 在打包时从网络下载 Electron，本项目使用 `package.json` 中配置的本地压缩包：
+云端打包不需要这一步。本地打包时，如果已经有 Electron 压缩包就会直接用；没有时会从网络下载。
 
-```json
-"electronDist": "./build/electron/electron-v43.4.1-win32-x64.zip"
-```
-
-打包前必须存在：
+可选文件路径：
 
 ```text
 build/electron/electron-v43.4.1-win32-x64.zip
 ```
 
-文件名必须与当前配置匹配： Electron `43.4.1`、Windows (`win32`)、`x64`。
-
-### Windows PowerShell 下载
-
-请在项目根目录执行：
-
-```powershell
-$ElectronVersion = "43.4.1"
-$ElectronFile = "electron-v$ElectronVersion-win32-x64.zip"
-$ElectronDirectory = Join-Path (Get-Location) "build\electron"
-$ElectronUrl = "https://github.com/electron/electron/releases/download/v$ElectronVersion/$ElectronFile"
-
-New-Item -ItemType Directory -Force $ElectronDirectory | Out-Null
-Invoke-WebRequest `
-  -Uri $ElectronUrl `
-  -OutFile (Join-Path $ElectronDirectory $ElectronFile)
-```
-
-如果 GitHub 下载较慢，可将 `$ElectronUrl` 改为：
-
-```powershell
-$ElectronUrl = "https://npmmirror.com/mirrors/electron/v$ElectronVersion/$ElectronFile"
-Invoke-WebRequest `
-  -Uri $ElectronUrl `
-  -OutFile (Join-Path $ElectronDirectory $ElectronFile)
-```
-
+文件名必须与当前 Electron 版本匹配： `43.4.1`、Windows (`win32`)、`x64`。
 
 ## 本地开发运行
 
@@ -119,9 +102,9 @@ dist/
 dist-electron/
 ```
 
-## 构建 Windows 安装程序
+## 本地构建 Windows 安装程序
 
-执行：
+更省事的方式见上面的「云端打包安装程序」。如果要在本机打包，执行：
 
 ```powershell
 npm run dist:win

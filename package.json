@@ -16,7 +16,7 @@
         "typecheck": "tsc --noEmit && tsc -p tsconfig.electron.json --noEmit",
         "test": "vitest run",
         "test:watch": "vitest",
-        "dist:win": "npm run build && electron-builder --win nsis --x64"
+        "dist:win": "npm run build && electron-builder --win nsis --x64 --publish never"
     },
     "dependencies": {
         "react": "^19.2.8",
@@ -68,6 +68,10 @@
             "createStartMenuShortcut": true,
             "deleteAppDataOnUninstall": false
         },
-        "electronDist": "./build/electron/electron-v43.4.1-win32-x64.zip"
+        "publish": {
+            "provider": "github",
+            "owner": "BOY332",
+            "repo": "keep-eyes"
+        }
     }
 }
