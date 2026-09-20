@@ -8,6 +8,9 @@ describe("设置校验", () => {
     expect(validateSettings({ earlyReminderSeconds: 0 }).earlyReminderSeconds).toBe(0);
     expect(() => validateSettings({ eyeIntervalMinutes: 0 })).toThrow("eyeIntervalMinutes");
     expect(() => validateSettings({ earlyReminderSeconds: 301 })).toThrow("earlyReminderSeconds");
+    expect(validateSettings({}).restMode).toBe("overlay");
+    expect(validateSettings({ restMode: "lock" }).restMode).toBe("lock");
+    expect(() => validateSettings({ restMode: "off" })).toThrow("restMode");
   });
 });
 
@@ -55,3 +58,4 @@ describe("提醒状态机", () => {
     expect(old.dueAt).not.toBe(fresh.dueAt);
   });
 });
+

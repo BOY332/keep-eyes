@@ -31,16 +31,23 @@ function integerInRange(value: unknown, key: keyof typeof ranges): number {
   return value;
 }
 
+function restModeValue(value: unknown): RestMode {
+  if (value === "overlay" || value === "lock") return value;
+  if (value === undefined) return DEFAULT_SETTINGS.restMode;
+  throw new Error("restMode 必须是 overlay 或 lock。");
+}
+
+/**
+ * 只接受当前产品支持的设置字段。扩展或被废弃后仍可能出现在
+ * 持久化数据里的旧字段，例如关显示器相关字段，保证旧数据可以安全迁移。
+ */
 export function validateSettings(input: Partial<ReminderSettings> | Record<string, unknown>): ReminderSettings {
   const values = { ...DEFAULT_SETTINGS, ...input };
-  if (values.restMode !== "overlay" && values.restMode !== "lock") {
-    throw new Error("restMode 必须是 overlay 或 lock。");
-  }
   return {
     eyeIntervalMinutes: integerInRange(values.eyeIntervalMinutes, "eyeIntervalMinutes"),
     restDurationSeconds: integerInRange(values.restDurationSeconds, "restDurationSeconds"),
     snoozeMinutes: integerInRange(values.snoozeMinutes, "snoozeMinutes"),
     earlyReminderSeconds: integerInRange(values.earlyReminderSeconds, "earlyReminderSeconds"),
-    restMode: values.restMode
+    restMode: restModeValue(values.restMode)
   };
 }
