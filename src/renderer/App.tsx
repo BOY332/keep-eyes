@@ -134,7 +134,7 @@ export default function App() {
         <button onClick={() => timedAction("SNOOZE")}>延后 {state.settings.snoozeMinutes} 分钟</button>
         <button onClick={() => dispatch({ type: "PAUSE", now: Date.now(), durationMs: 30 * 60_000 })}>暂停 30 分钟</button>
         <button className="secondary" onClick={() => void window.keepEyes.closeEarlyReminder()}>知道了</button>
-        <button className="secondary skip-rest" onClick={skipRest}>跳过本次休息，继续当牛马</button>
+        <button className="secondary skip-rest" onClick={skipRest}>跳过本次休息</button>
       </div>
     </main>;
   }
@@ -155,16 +155,20 @@ export default function App() {
         <button onClick={() => timedAction("SNOOZE")}>延后提醒</button>
         <button onClick={() => dispatch({ type: "PAUSE", now: Date.now(), durationMs: 30 * 60_000 })}>暂停 30 分钟</button>
         <button className="secondary" onClick={() => void window.keepEyes.closeEarlyReminder()}>知道了</button>
-        <button className="secondary" onClick={skipRest}>跳过本次休息，继续当牛马</button>
+        <button className="secondary" onClick={skipRest}>跳过本次休息</button>
+      </div>}
+      {state.phase !== "resting" && state.phase !== "awaiting-action" && <div className="actions">
+        <button onClick={() => timedAction("BEGIN_REST")}>立刻休息</button>
+        {state.phase === "paused" && <button onClick={() => timedAction("RESUME")}>恢复提醒</button>}
       </div>}
       {state.phase === "resting" && state.settings.restMode === "overlay" && <div className="actions"><button onClick={() => timedAction("END_REST")}>提前结束休息</button></div>}
-      {state.phase === "paused" && <div className="actions"><button onClick={() => timedAction("RESUME")}>恢复提醒</button></div>}
     </> : <section className="settings">
       <h2>提醒设置</h2>
       <label>用眼间隔（分钟）<input type="number" min="1" max="240" value={draft.eyeIntervalMinutes} onChange={(event) => setDraft({ ...draft, eyeIntervalMinutes: numberValue(event.target.value) })} /></label>
       <label>休息时长（秒）<input type="number" min="5" max="3600" value={draft.restDurationSeconds} onChange={(event) => setDraft({ ...draft, restDurationSeconds: numberValue(event.target.value) })} /></label>
       <label>延后时长（分钟）<input type="number" min="1" max="120" value={draft.snoozeMinutes} onChange={(event) => setDraft({ ...draft, snoozeMinutes: numberValue(event.target.value) })} /></label>
       <label>提前提醒（秒）<input type="number" min="0" max="300" value={draft.earlyReminderSeconds} onChange={(event) => setDraft({ ...draft, earlyReminderSeconds: numberValue(event.target.value) })} /><small>范围 0～300，默认 30；设置为 0 表示不提前显示。</small></label>
+      <label>眼睛放松提醒（分钟）<input type="number" min="0" max="240" value={draft.relaxPromptMinutes} onChange={(event) => setDraft({ ...draft, relaxPromptMinutes: numberValue(event.target.value) })} /><small>每隔该时间弹出一次提示，不进入黑屏或锁定。0 表示关闭。</small></label>
       <fieldset>
         <legend>休息方式</legend>
         <label className="mode">

@@ -5,6 +5,7 @@ export interface ReminderSettings {
   restDurationSeconds: number;
   snoozeMinutes: number;
   earlyReminderSeconds: number;
+  relaxPromptMinutes: number;
   restMode: RestMode;
 }
 
@@ -13,6 +14,7 @@ export const DEFAULT_SETTINGS: ReminderSettings = {
   restDurationSeconds: 20,
   snoozeMinutes: 5,
   earlyReminderSeconds: 30,
+  relaxPromptMinutes: 0,
   restMode: "overlay"
 };
 
@@ -20,7 +22,8 @@ const ranges = {
   eyeIntervalMinutes: [1, 240],
   restDurationSeconds: [5, 3600],
   snoozeMinutes: [1, 120],
-  earlyReminderSeconds: [0, 300]
+  earlyReminderSeconds: [0, 300],
+  relaxPromptMinutes: [0, 240]
 } as const;
 
 function integerInRange(value: unknown, key: keyof typeof ranges): number {
@@ -48,6 +51,7 @@ export function validateSettings(input: Partial<ReminderSettings> | Record<strin
     restDurationSeconds: integerInRange(values.restDurationSeconds, "restDurationSeconds"),
     snoozeMinutes: integerInRange(values.snoozeMinutes, "snoozeMinutes"),
     earlyReminderSeconds: integerInRange(values.earlyReminderSeconds, "earlyReminderSeconds"),
+    relaxPromptMinutes: integerInRange(values.relaxPromptMinutes, "relaxPromptMinutes"),
     restMode: restModeValue(values.restMode)
   };
 }

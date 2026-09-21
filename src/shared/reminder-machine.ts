@@ -61,7 +61,7 @@ export function transition(snapshot: ReminderSnapshot, event: ReminderEvent): Re
     case "START": next = createInitialSnapshot(snapshot.settings, event.now); break;
     case "TICK": next = reconcileSnapshot(snapshot, event.now); break;
     case "BEGIN_REST":
-      if (snapshot.phase !== "awaiting-action") return snapshot;
+      if (snapshot.phase === "resting") return snapshot;
       next = restSnapshot(snapshot, event.now); break;
     case "SNOOZE":
       if (snapshot.phase !== "awaiting-action") return snapshot;

@@ -15,7 +15,7 @@ describe("TrayController", () => {
     const handlers = { open: vi.fn(), startRest: vi.fn(), pause: vi.fn(), quit: vi.fn() };
     const tray = new TrayController(handlers); tray.create();
     expect(trayIcons[0]).toBeTruthy();
-    for (const label of ["打开应用", "立即开始休息", "暂停提醒 30 分钟", "退出"]) actions.find((item) => item.label === label)?.click?.();
+    for (const label of ["打开应用", "立刻休息", "暂停提醒 30 分钟", "退出"]) actions.find((item) => item.label === label)?.click?.();
     expect(handlers.open).toHaveBeenCalledOnce(); expect(handlers.startRest).toHaveBeenCalledOnce(); expect(handlers.pause).toHaveBeenCalledOnce(); expect(handlers.quit).toHaveBeenCalledOnce();
     tray.destroy(); expect(trayInstances[0].destroy).toHaveBeenCalledOnce();
   });

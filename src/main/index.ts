@@ -10,12 +10,15 @@ import { RestOverlayWindowController } from "./rest-overlay-window";
 import { TrayController } from "./tray-controller";
 import { WindowsActionsAdapter } from "./windows-actions";
 import { AlertController } from "./alert-controller";
+import { ElectronNotifier } from "./electron-alert-services";
+import { RelaxPromptController } from "./relax-prompt-controller";
 import { sendStateToMainWindow } from "./main-window-state";
 
 let mainWindow: BrowserWindow | null = null;
 let scheduler: ReminderScheduler;
 let tray: TrayController;
 let alerts: AlertController;
+let relaxPrompts: RelaxPromptController;
 const developmentUrl = process.env.VITE_DEV_SERVER_URL;
 const rendererUrl = () => developmentUrl ?? pathToFileURL(path.join(__dirname, "../../dist/index.html")).toString();
 
@@ -54,6 +57,8 @@ app.whenReady().then(async () => {
   const focus = new FocusReminderWindowController(developmentUrl);
   const overlays = new RestOverlayWindowController(developmentUrl);
   alerts = new AlertController(scheduler, focus, new WindowsActionsAdapter(), overlays);
+  relaxPrompts = new RelaxPromptController(() => scheduler.getState(), new ElectronNotifier());
+  relaxPrompts.start();
   tray = new TrayController({
     open: showMainWindow,
     startRest: () => void scheduler.dispatch({ type: "BEGIN_REST", now: Date.now() }),
@@ -71,6 +76,7 @@ app.whenReady().then(async () => {
     void alerts.stateChanged(state).catch((error: unknown) => {
       console.error("Failed to update the reminder window.", error);
     });
+    relaxPrompts.stateChanged(state);
   });
   const refreshDisplays = () => void alerts.returnFromSystemAction();
   screen.on("display-added", refreshDisplays);
@@ -91,4 +97,4 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", () => { /* 托盘常驻，用户需通过托盘退出。 */ });
-app.on("before-quit", () => { scheduler?.stop(); tray?.destroy(); });
+app.on("before-quit", () => { scheduler?.stop(); relaxPrompts?.stop(); tray?.destroy(); });

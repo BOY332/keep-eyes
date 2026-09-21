@@ -47,14 +47,15 @@ describe("主界面与设置", () => {
     expect(screen.getByText(/所有屏幕黑屏遮罩/)).toBeTruthy();
   });
 
-  it("设置含四项时间和休息方式", async () => {
+  it("设置含五项时间和休息方式", async () => {
     installApi();
     render(<App />);
     fireEvent.click(await screen.findByRole("button", { name: "设置" }));
     expect(screen.getByText("提前提醒（秒）")).toBeTruthy();
+    expect(screen.getByText("眼睛放松提醒（分钟）")).toBeTruthy();
     expect(screen.queryByText("温和通知")).toBeNull();
     expect(screen.getByText("黑屏遮罩 + 休息倒计时")).toBeTruthy();
-    expect(screen.getAllByRole("spinbutton")).toHaveLength(4);
+    expect(screen.getAllByRole("spinbutton")).toHaveLength(5);
   });
 
   it("知道了仅关闭提醒且不派发计时事件", async () => {
@@ -66,6 +67,13 @@ describe("主界面与设置", () => {
     expect(dispatch).not.toHaveBeenCalled();
   });
 
+  it("用眼计时时可以立刻休息", async () => {
+    const { dispatch } = installApi(baseState("eye-timer"));
+    render(<App />);
+    fireEvent.click(await screen.findByRole("button", { name: "立刻休息" }));
+    expect(dispatch.mock.calls.map((call) => (call[0] as { type: string }).type)).toEqual(["BEGIN_REST"]);
+  });
+
   it("提前提醒时支持开始休息、延后、暂停和跳过", async () => {
     const { dispatch, skipRest } = installApi(baseState("awaiting-action"));
     render(<App />);
@@ -73,7 +81,7 @@ describe("主界面与设置", () => {
     fireEvent.click(screen.getByRole("button", { name: "开始休息" }));
     fireEvent.click(screen.getByRole("button", { name: "延后提醒" }));
     fireEvent.click(screen.getByRole("button", { name: "暂停 30 分钟" }));
-    fireEvent.click(screen.getByRole("button", { name: "跳过本次休息，继续当牛马" }));
+    fireEvent.click(screen.getByRole("button", { name: "跳过本次休息" }));
     expect(dispatch.mock.calls.map((call) => (call[0] as { type: string }).type)).toEqual(["BEGIN_REST", "SNOOZE", "PAUSE"]);
     expect(skipRest).toHaveBeenCalledOnce();
   });

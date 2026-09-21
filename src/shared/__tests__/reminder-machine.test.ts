@@ -11,6 +11,9 @@ describe("设置校验", () => {
     expect(validateSettings({}).restMode).toBe("overlay");
     expect(validateSettings({ restMode: "lock" }).restMode).toBe("lock");
     expect(() => validateSettings({ restMode: "off" })).toThrow("restMode");
+    expect(validateSettings({}).relaxPromptMinutes).toBe(0);
+    expect(validateSettings({ relaxPromptMinutes: 15 }).relaxPromptMinutes).toBe(15);
+    expect(() => validateSettings({ relaxPromptMinutes: 241 })).toThrow("relaxPromptMinutes");
   });
 });
 
@@ -35,6 +38,16 @@ describe("提醒状态机", () => {
     const resting = transition(awaiting, { type: "BEGIN_REST", now: 20 * 60_000 - 1 });
     const next = transition(resting, { type: "END_REST", now: 20 * 60_000 + 10_000 });
     expect(next.phase).toBe("eye-timer");
+  });
+
+  it("用眼计时和暂停中都可以立刻开始休息", () => {
+    const started = createInitialSnapshot(DEFAULT_SETTINGS, 0);
+    const fromTimer = transition(started, { type: "BEGIN_REST", now: 5_000 });
+    expect(fromTimer).toMatchObject({ phase: "resting", restEndsAt: 25_000, dueAt: null });
+    const paused = transition(started, { type: "PAUSE", now: 5_000, durationMs: 30 * 60_000 });
+    const fromPaused = transition(paused, { type: "BEGIN_REST", now: 8_000 });
+    expect(fromPaused).toMatchObject({ phase: "resting", restEndsAt: 28_000, pauseEndsAt: null });
+    expect(transition(fromTimer, { type: "BEGIN_REST", now: 9_000 })).toBe(fromTimer);
   });
 
   it("跳过本次休息会从当前时刻开始完整用眼周期", () => {

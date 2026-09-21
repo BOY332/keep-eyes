@@ -22,7 +22,7 @@ export class TrayController {
     this.tray.setContextMenu(Menu.buildFromTemplate([
       { label: `keep-eyes（${status}）`, enabled: false }, { type: "separator" },
       { label: "打开应用", click: () => this.handlers.open() },
-      { label: "立即开始休息", click: () => this.handlers.startRest() },
+      { label: "立刻休息", click: () => this.handlers.startRest() },
       { label: "暂停提醒 30 分钟", click: () => this.handlers.pause() },
       { type: "separator" }, { label: "退出", click: () => this.handlers.quit() }
     ]));
